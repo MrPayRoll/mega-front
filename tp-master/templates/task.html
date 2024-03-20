@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Task Form</title>
+<style>
+  body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 36px;
+        }
+
+        nav {
+            margin-top: 20px;
+        }
+
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            text-align: center;
+        }
+
+        nav ul li {
+            display: inline-block;
+            margin-right: 20px;
+        }
+
+        nav ul li a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 18px;
+        }
+
+        nav ul li a:hover {
+            text-decoration: underline;
+        }
+  .task-card {
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    padding: 20px;
+    margin-top: 20px;
+    width: 300px;
+    margin-left: 30%;
+  }
+  .task-card img {
+    width: 100%;
+    height: auto;
+  }
+  .task-card form {
+    margin-top: 20px;
+  }
+  .task-card input[type="text"],
+  .task-card input[type="number"],
+  .task-card input[type="file"] {
+    width: calc(100% - 22px);
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+  }
+  .task-card input[type="submit"] {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 3px;
+    background-color: #5cb85c;
+    color: white;
+    margin-top: 10px;
+    cursor: pointer;
+  }
+  .task-card input[type="submit"]:hover {
+    background-color: #4cae4c;
+  }
+</style>
+</head>
+<body>
+  <header>
+    <div class="container">
+        <h1>Добро пожаловать!</h1>
+        <nav>
+            <ul>
+                <li><a href="/galv">Главная</a></li>
+                <li><a href="/task">Второстипенная</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+<div class="task-card">
+  <form id="taskForm">
+      <label for="task_name">Task Name:</label>
+      <input type="text" id="task_name" name="task_name" required>
+
+      <label for="description">Description:</label>
+      <input type="text" id="description" name="description" required>
+
+      <label for="imageInput">Image:</label>
+      <input type="file" id="imageInput" name="imageInput" accept="image/*" required>
+
+      <label for="price">Price:</label>
+      <input type="number" id="price" name="price" required>
+
+      <input type="hidden" id="img" name="img">
+
+      <input type="submit" value="Add Task">
+  </form>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+      document.getElementById("taskForm").addEventListener("submit", postData);
+      document.getElementById("imageInput").addEventListener("change", function() {
+          encodeImageFileAsURL(this);
+      });
+  });
+  function encodeImageFileAsURL(element) {
+      var file = element.files[0];
+      var reader = new FileReader();
+      reader.onloadend = function() {
+          document.getElementById("img").value = reader.result;
+      }
+      reader.readAsDataURL(file);
+  }
+  function postData(event) {
+      event.preventDefault();
+      var taskName = document.getElementById("task_name").value;
+      var description = document.getElementById("description").value;
+      var imgString = document.getElementById("img").value;
+      var price = document.getElementById("price").value;
+
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", "/api/tasks", true);
+      xhr.setRequestHeader("Content-Type", "application/json");
+      xhr.onreadystatechange = function () {
+          if (xhr.readyState === 4) {
+              if (xhr.status === 200) {
+                  document.getElementById("responseMessage").innerHTML = "Task created successfully.";
+              } else {
+                  document.getElementById("responseMessage").innerHTML = "Error: " + xhr.statusText;
+              }
+          }
+      };
+      var formData = JSON.stringify({
+          task_name: taskName,
+          description: description,
+          img: imgString,
+          price: price
+      });
+
+      xhr.send(formData);
+  }
+</script>
+</div>
+
+  <div class="task-card">
+      <h1>DELETE Request Example</h1>
+
+      <form id="deleteForm">
+          <label for="taskId">Task ID:</label><br>
+          <input type="number" id="taskId" name="taskId"><br><br>
+          <button type="submit">Delete Task</button>
+      </form>
+
+      <div id="responseMessage"></div>
+  </div>
+
+  <script>
+      function deleteData(event) {
+          event.preventDefault(); 
+          var taskId = document.getElementById("taskId").value;
+          var xhr = new XMLHttpRequest();
+          xhr.open("DELETE", "/api/tasks/" + taskId, true);
+          xhr.onreadystatechange = function () {
+              if (xhr.readyState === 4) {
+                  if (xhr.status === 200) {
+                      document.getElementById("responseMessage").innerHTML = "Task deleted successfully.";
+                  } else {
+                      document.getElementById("responseMessage").innerHTML = "Error: " + xhr.statusText;
+                  }
+              }
+          };
+          xhr.send();
+      }
+      document.getElementById("deleteForm").addEventListener("submit", deleteData);
+  </script>
+</body>
+</html>
